@@ -20,11 +20,13 @@
 #define DEFAULT_HASHTAG_COLOR [[UIColor alloc] initWithWhite:170.0/255.0 alpha:1.0]                                 //#
 #define DEFAULT_URL_COLOR [[UIColor alloc] initWithRed:129.0/255.0 green:171.0/255.0 blue:193.0/255.0 alpha:1.0]    //url
 #else //新配色
-#define DEFAULT_SELECTION_COLOR [UIColor colorWithWhite:0.9 alpha:1.0] //selection color 选择文本颜色
+#define DEFAULT_SELECTION_COLOR [[UIColor alloc] initWithRed:187.0/255.0 green:216.0/255.0 blue:244.0/255.0 alpha:1.0] //selection color 选择文本颜色 0xBBD8F4
 
-#define DEFAULT_HANDLE_COLOR [UIColor redColor]                                                                     //@
-#define DEFAULT_HASHTAG_COLOR [[UIColor alloc] initWithWhite:170.0/255.0 alpha:1.0]                                 //#
-#define DEFAULT_URL_COLOR [[UIColor alloc] initWithRed:129.0/255.0 green:171.0/255.0 blue:193.0/255.0 alpha:1.0]    //url
+#define DEFAULT_HANDLE_COLOR [[UIColor alloc] initWithRed:84.0/255.0 green:128.0/255.0 blue:177.0/255.0 alpha:1.0]  //@ 0x5480B1
+#define DEFAULT_HASHTAG_COLOR [[UIColor alloc] initWithRed:84.0/255.0 green:128.0/255.0 blue:177.0/255.0 alpha:1.0] //# 0x5480B1
+#define DEFAULT_URL_COLOR [[UIColor alloc] initWithRed:84.0/255.0 green:128.0/255.0 blue:177.0/255.0 alpha:1.0]    //url0x5480B1
+
+#define DEFAULT_FONT [UIFont fontWithName:@"HelveticaNeue" size:14.0]
 #endif
 
 #pragma mark -
@@ -113,10 +115,12 @@
     _textSelectable = NO;
     _selectionColor = DEFAULT_SELECTION_COLOR;
     
-    _attributesText = @{NSForegroundColorAttributeName: self.textColor, NSFontAttributeName: [UIFont fontWithName:@"HelveticaNeue" size:14.0]};
-    _attributesHandle = @{NSForegroundColorAttributeName: DEFAULT_HANDLE_COLOR, NSFontAttributeName: [UIFont fontWithName:@"HelveticaNeue" size:14.0]};
-    _attributesHashtag = @{NSForegroundColorAttributeName: DEFAULT_HASHTAG_COLOR, NSFontAttributeName: [UIFont fontWithName:@"HelveticaNeue" size:14.0]};
-    _attributesLink = @{NSForegroundColorAttributeName: DEFAULT_URL_COLOR, NSFontAttributeName: [UIFont fontWithName:@"HelveticaNeue" size:14.0]};
+//    UIFont* font = DEFAULT_FONT;
+    UIFont *font=self.font;
+    _attributesText = @{NSForegroundColorAttributeName: self.textColor, NSFontAttributeName: font};
+    _attributesHandle = @{NSForegroundColorAttributeName: DEFAULT_HANDLE_COLOR, NSFontAttributeName: font};
+    _attributesHashtag = @{NSForegroundColorAttributeName: DEFAULT_HASHTAG_COLOR, NSFontAttributeName: font};
+    _attributesLink = @{NSForegroundColorAttributeName: DEFAULT_URL_COLOR, NSFontAttributeName: font};
     
     self.validProtocols = @[@"http", @"https"];
 }
