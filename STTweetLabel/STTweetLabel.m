@@ -188,7 +188,20 @@
             if (charIsMember)
                 length++;
             else
+            {
+                /////kk:不同于英语语句中 "#god that"单个#就能描述一个标签 中文语句需要 "#找人#好"来描述一个标签
+                if (hotWord ==STTweetHashtag && [tmpText characterAtIndex:range.location+length]=='#' ) {
+                    NSRange endHashTag;
+                    endHashTag.location=range.location+length;
+                    endHashTag.length=1;
+                    
+                    [tmpText replaceCharactersInRange:endHashTag withString:@"%"];
+                    length++;
+                }
+                ////////////////////////////////////////////////////////////////////////////////////
+                
                 break;
+            }
         }
         
         // Register the hot word and its range
