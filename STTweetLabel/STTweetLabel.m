@@ -9,7 +9,23 @@
 #import "STTweetLabel.h"
 #import "STTweetTextStorage.h"
 
-#define STURLRegex @"(?i)\\b((?:[a-z][\\w-]+:(?:/{1,3}|[a-z0-9%])|www\\d{0,3}[.]|[a-z0-9.\\-]+[.][a-z]{2,4}/)(?:[^\\s()<>]+|\\(([^\\s()<>]+|(\\([^\\s()<>]+\\)))*\\))+(?:\\(([^\\s()<>]+|(\\([^\\s()<>]+\\)))*\\)|[^\\s`!()\\[\\]{};:'\".,<>?«»“”‘’]))"
+//#define STURLRegex @"(?i)\\b((?:[a-z][\\w-]+:(?:/{1,3}|[a-z0-9%])|www\\d{0,3}[.]|[a-z0-9.\\-]+[.][a-z]{2,4}/)(?:[^\\s()<>]+|\\(([^\\s()<>]+|(\\([^\\s()<>]+\\)))*\\))+(?:\\(([^\\s()<>]+|(\\([^\\s()<>]+\\)))*\\)|[^\\s`!()\\[\\]{};:'\".,<>?«»“”‘’]))"
+
+#define STURLRegex @"((http[s]{0,1}|ftp)://[a-zA-Z0-9\\.\\-]+\\.([a-zA-Z]{2,4})(:\\d+)?(/[a-zA-Z0-9\\.\\-~!@#$%^&*+?:_/=<>]*)?)|(www.[a-zA-Z0-9\\.\\-]+\\.([a-zA-Z]{2,4})(:\\d+)?(/[a-zA-Z0-9\\.\\-~!@#$%^&*+?:_/=<>]*)?)"
+
+#if 0 //原定义
+#define DEFAULT_SELECTION_COLOR [UIColor colorWithWhite:0.9 alpha:1.0] //selection color 选择文本颜色
+
+#define DEFAULT_HANDLE_COLOR [UIColor redColor]                                                                     //@
+#define DEFAULT_HASHTAG_COLOR [[UIColor alloc] initWithWhite:170.0/255.0 alpha:1.0]                                 //#
+#define DEFAULT_URL_COLOR [[UIColor alloc] initWithRed:129.0/255.0 green:171.0/255.0 blue:193.0/255.0 alpha:1.0]    //url
+#else //新配色
+#define DEFAULT_SELECTION_COLOR [UIColor colorWithWhite:0.9 alpha:1.0] //selection color 选择文本颜色
+
+#define DEFAULT_HANDLE_COLOR [UIColor redColor]                                                                     //@
+#define DEFAULT_HASHTAG_COLOR [[UIColor alloc] initWithWhite:170.0/255.0 alpha:1.0]                                 //#
+#define DEFAULT_URL_COLOR [[UIColor alloc] initWithRed:129.0/255.0 green:171.0/255.0 blue:193.0/255.0 alpha:1.0]    //url
+#endif
 
 #pragma mark -
 #pragma mark STTweetLabel
@@ -94,13 +110,13 @@
 	[self setNumberOfLines:0];
     
     _leftToRight = YES;
-    _textSelectable = YES;
-    _selectionColor = [UIColor colorWithWhite:0.9 alpha:1.0];
+    _textSelectable = NO;
+    _selectionColor = DEFAULT_SELECTION_COLOR;
     
     _attributesText = @{NSForegroundColorAttributeName: self.textColor, NSFontAttributeName: [UIFont fontWithName:@"HelveticaNeue" size:14.0]};
-    _attributesHandle = @{NSForegroundColorAttributeName: [UIColor redColor], NSFontAttributeName: [UIFont fontWithName:@"HelveticaNeue" size:14.0]};
-    _attributesHashtag = @{NSForegroundColorAttributeName: [[UIColor alloc] initWithWhite:170.0/255.0 alpha:1.0], NSFontAttributeName: [UIFont fontWithName:@"HelveticaNeue" size:14.0]};
-    _attributesLink = @{NSForegroundColorAttributeName: [[UIColor alloc] initWithRed:129.0/255.0 green:171.0/255.0 blue:193.0/255.0 alpha:1.0], NSFontAttributeName: [UIFont fontWithName:@"HelveticaNeue" size:14.0]};
+    _attributesHandle = @{NSForegroundColorAttributeName: DEFAULT_HANDLE_COLOR, NSFontAttributeName: [UIFont fontWithName:@"HelveticaNeue" size:14.0]};
+    _attributesHashtag = @{NSForegroundColorAttributeName: DEFAULT_HASHTAG_COLOR, NSFontAttributeName: [UIFont fontWithName:@"HelveticaNeue" size:14.0]};
+    _attributesLink = @{NSForegroundColorAttributeName: DEFAULT_URL_COLOR, NSFontAttributeName: [UIFont fontWithName:@"HelveticaNeue" size:14.0]};
     
     self.validProtocols = @[@"http", @"https"];
 }
@@ -153,9 +169,11 @@
         }
 
         [tmpText replaceCharactersInRange:range withString:@"%"];
+#if 0  //不需要考虑email的情况,不同于英文世界中空格为自然的分词隔断，中文间没有空格
         // If the hot character is not preceded by a alphanumeric characater, ie email (sebastien@world.com)
         if (range.location > 0 && [tmpText characterAtIndex:range.location - 1] != ' ' && [tmpText characterAtIndex:range.location - 1] != '\n')
             continue;
+#endif
 
         // Determine the length of the hot word
         int length = (int)range.length;
@@ -190,10 +208,23 @@
         NSRange protocolRange = [link rangeOfString:@"://"];
         if (protocolRange.location != NSNotFound) {
             protocol = [link substringToIndex:protocolRange.location];
+            protocol = @"http";
         }
 
         if ([_validProtocols containsObject:protocol.lowercaseString]) {
             [_rangesOfHotWords addObject:@{@"hotWord": @(STTweetLink), @"protocol": protocol, @"range": [NSValue valueWithRange:result.range]}];
+            
+            //链接的位置可能会破坏掉之前的@#的解析结果，则把破坏掉的分析结果删除掉
+            NSInteger index=0;
+            while ([_rangesOfHotWords count]>index) {
+                NSDictionary *dictionary = [_rangesOfHotWords objectAtIndex:index];
+                NSRange range = [[dictionary objectForKey:@"range"] rangeValue];
+                if (range.location< result.range.location && result.range.location <= range.location+range.length) {
+                    [_rangesOfHotWords removeObjectAtIndex:index];
+                    continue;
+                }
+                index++;
+            }
         }
     }];
 }
