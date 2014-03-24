@@ -125,6 +125,15 @@
     self.validProtocols = @[@"http", @"https"];
 }
 
+#pragma mark - support AutoLayout
+/*
+ Implementing a Custom View to Work with A
+ https://developer.apple.com/library/ios/documentation/userexperience/conceptual/AutolayoutPG/ImplementingView/ImplementingView.html
+ */
+-(CGSize)intrinsicContentSize {
+    CGSize sz = [self suggestedFrameSizeToFitEntireStringConstraintedToWidth:self.frame.size.width];
+    return CGSizeMake(sz.width, sz.height+1);
+}
 #pragma mark -
 #pragma mark Printing and calculating text
 
